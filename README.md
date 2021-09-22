@@ -2,6 +2,6 @@
 
 Lorem ipsum
 
-## Collaborators
+## Contributors
 
 - 
