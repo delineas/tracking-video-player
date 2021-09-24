@@ -24,9 +24,22 @@ import { onMounted, onUnmounted } from "@vue/runtime-core";
 import Player from "@vimeo/player";
 
 const props = defineProps({
-  vimeoId: String,
-  uid: String,
-  chapters: Array,
+  videoId: {
+    type: [Number, String],
+    required: true,
+  },
+  userId: {
+    type: [Number, String],
+    default: 0,
+  },
+  chapters: {
+    type: Array,
+    default: [],
+  },
+  serverTracking: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 const activeChapter = ref(props.chapters[0]);
