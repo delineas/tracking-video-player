@@ -46,8 +46,8 @@ const activeChapter = ref(props.chapters[0]);
 
 let player;
 let postPlayerInterval;
-const localStorageKey = `player-progress-${props.uid}-${props.vimeoId}`;
-const localStorageKeyLastUpdate = `player-progress-last-update-${props.uid}-${props.vimeoId}`;
+const localStorageKey = `video-player-progress-${props.userId}-${props.videoId}`;
+const localStorageKeyLastUpdate = `video-player-last-update-${props.userId}-${props.videoId}`;
 
 onMounted(() => {
   postPlayerInterval = setInterval(postPlayerProgress, 5000);
