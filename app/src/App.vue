@@ -1,22 +1,11 @@
 <script setup>
 import VimeoPlayer from './components/VimeoPlayer.vue'
+import chapters from './data/chapters.json'
+import { config } from './config'
 </script>
 
 <template>
-  <VimeoPlayer vimeo-id="19231868" uid="46453" :chapters="[
-    {
-      startTime: 0,
-      title: 'Introducción',
-    },
-    {
-      startTime: 25,
-      title: 'Aquí se la pega',
-    },
-    {
-      startTime: 45,
-      title: 'Aquí se va el prota',
-    }
-  ]"></VimeoPlayer>
+  <VimeoPlayer :video-id="config.video_id" :user-id="config.user_id" :chapters="chapters"></VimeoPlayer>
 </template>
 
 <style>
