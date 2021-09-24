@@ -1,7 +1,7 @@
 <template>
   <div class="player">
     <div class="video">
-      <div id="player-video"></div>
+      <div id="player-video" class="video__embed"></div>
     </div>
     <div class="controls">
       <ul class="controls__list">
@@ -9,9 +9,12 @@
           v-for="chapter in chapters"
           :key="chapter"
           @click="setVideoToChapter(chapter)"
-          :class="{ active: activeChapter.title == chapter.title }"
+          :class="{
+            active: activeChapter.title == chapter.title,
+            featured: chapter.featured,
+          }"
         >
-          {{ chapter.title }}
+          {{ chapter.title }} <span v-if="chapter.starred">✴️</span>
         </li>
       </ul>
     </div>
@@ -19,7 +22,9 @@
 </template>
 
 <script setup>
-import { reactive, ref } from "@vue/reactivity";
+import { config } from "../config";
+import postPlayerProgress from "../utils/progress";
+import { ref } from "@vue/reactivity";
 import { onMounted, onUnmounted } from "@vue/runtime-core";
 import Player from "@vimeo/player";
 
@@ -50,75 +55,65 @@ const localStorageKey = `video-player-progress-${props.userId}-${props.videoId}`
 const localStorageKeyLastUpdate = `video-player-last-update-${props.userId}-${props.videoId}`;
 
 onMounted(() => {
-  postPlayerInterval = setInterval(postPlayerProgress, 5000);
+  postPlayerInterval = setInterval(
+    postPlayerProgress(
+      props.serverTracking.value,
+      localStorageKey,
+      localStorageKeyLastUpdate
+    ),
+    10000
+  );
 
-  localStorage.setItem(localStorageKeyLastUpdate, JSON.stringify({
-    percent: 0
-  }));
+  // Set initial progress update on 0
+  localStorage.setItem(
+    localStorageKeyLastUpdate,
+    JSON.stringify({
+      percent: 0,
+    })
+  );
 
   player = new Player("player-video", {
-    id: props.vimeoId,
-    width: 400,
+    id: props.videoId,
+    width: "800",
   });
 
   player.on("timeupdate", function (event) {
     const playerProgress = {
-      uid: props.uid,
-      vid: props.vimeoId,
+      userId: props.userId,
+      vid: props.videoId,
       percent: event.percent,
     };
     localStorage.setItem(localStorageKey, JSON.stringify(playerProgress));
 
-    activeChapter.value = props.chapters.filter(chapter => chapter.startTime <= event.seconds).at(-1)
+    setActiveChapterFromProgress(event.seconds);
   });
 
-  fetch(
-    `http://localhost:8080/api/v1/progress/video/${props.uid}/${props.vimeoId}`
-  )
-    .then((response) => {
-      if (response.status == 200) {
-        return response.json();
-      } else if (response.status === 404) {
-        return Promise.reject("Error 404");
-      } else {
-        return Promise.reject("Some other error: " + response.status);
-      }
-    })
-    .then((result) => {
-      player.getDuration().then((duration) => {
-        player.setCurrentTime(result.percent * duration);
-        player.play();
-      });
-    })
-    .catch(console.log);
+  const playerStorage = localStorage.getItem(localStorageKey);
+
+  if (playerStorage) {
+    const playerProgress = JSON.parse(playerStorage);
+    setPlayerProgressCurrentTime(playerProgress.percent);
+    return;
+  }
+  if (!playerStorage && props.serverTracking.value) {
+    fetch(`${config.server_api_get_progress}/${props.userId}/${props.videoId}`)
+      .then((response) => {
+        if (response.status == 200) {
+          return response.json();
+        } else if (response.status === 404) {
+          return Promise.reject("Error 404");
+        } else {
+          return Promise.reject("Some other error: " + response.status);
+        }
+      })
+      .then((result) => {
+        setPlayerProgressCurrentTime(result.percent);
+      })
+      .catch(console.log);
+  }
 });
 
 onUnmounted(() => clearInterval(postPlayerInterval));
-
-const postPlayerProgress = () => {
-  const playerStorage = JSON.parse(localStorage.getItem(localStorageKey));
-  const playerStorageLastUpdate = JSON.parse(
-    localStorage.getItem(localStorageKeyLastUpdate)
-  );
-
-  if (
-    playerStorage != null &&
-    playerStorageLastUpdate?.percent !== playerStorage?.percent
-  ) {
-    fetch("http://localhost:8080/api/v1/progress", {
-      method: "POST",
-      body: JSON.stringify(playerStorage),
-      headers: {
-        "Content-Type": "application/json",
-      },
-    })
-      .then((response) => response.json())
-      .then((result) => {
-        localStorage.setItem(localStorageKeyLastUpdate, JSON.stringify(playerStorage));
-      })
-      .catch((error) => console.log(error));
-  }
-};
 
 const setVideoToChapter = (chapter) => {
   activeChapter.value = chapter;
