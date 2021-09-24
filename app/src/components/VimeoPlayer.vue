@@ -150,12 +150,16 @@ const setActiveChapterFromProgress = (time) => {
 
 .controls {
   flex: 1;
+  overflow-y: hidden;
+  height: 450px;
   background-color: antiquewhite;
   color: darkslateblue;
   border-radius: 0.5em;
 }
 
 .controls__list {
+  overflow-y: scroll;
+  height: 100%;
   list-style: none;
   padding: 0;
   margin: 0;
@@ -172,5 +176,8 @@ const setActiveChapterFromProgress = (time) => {
 .controls__list li.active {
   background-color: darkslateblue;
   color: antiquewhite;
+}
+.controls__list li.featured {
+  font-weight: bold;
 }
 </style>
