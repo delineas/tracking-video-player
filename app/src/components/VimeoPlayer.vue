@@ -123,6 +123,20 @@ const setVideoToChapter = (chapter) => {
       }
     });
 };
+
+const setPlayerProgressCurrentTime = (percent = 0) => {
+  player.getDuration().then((duration) => {
+    player.setCurrentTime(percent * duration);
+    setActiveChapterFromProgress(percent * duration);
+    player.play();
+  });
+};
+
+const setActiveChapterFromProgress = (time) => {
+  activeChapter.value = props.chapters
+    .filter((chapter) => chapter.startTime <= time)
+    .at(-1);
+};
 </script>
 
 <style>
