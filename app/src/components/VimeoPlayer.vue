@@ -8,7 +8,7 @@
         <li
           v-for="chapter in chapters"
           :key="chapter"
-          @click="setVideoToChapter(chapter)"
+          @click="setVideoToChapter($event, chapter)"
           :class="{
             active: activeChapter.title == chapter.title,
             featured: chapter.featured,
@@ -115,7 +115,7 @@ onMounted(() => {
 
 onUnmounted(() => clearInterval(postPlayerInterval));
 
-const setVideoToChapter = (chapter) => {
+const setVideoToChapter = (event, chapter) => {
   activeChapter.value = chapter;
   player
     .setCurrentTime(chapter.startTime)
@@ -130,6 +130,7 @@ const setVideoToChapter = (chapter) => {
           break;
       }
     });
+  //event.target.scrollIntoView({ block: "center", behavior: "smooth" }); 
 };
 
 const setPlayerProgressCurrentTime = (percent = 0) => {
@@ -141,9 +142,15 @@ const setPlayerProgressCurrentTime = (percent = 0) => {
 };
 
 const setActiveChapterFromProgress = (time) => {
+  const oldActiveChapterStartTime = activeChapter.value.startTime;
   activeChapter.value = props.chapters
     .filter((chapter) => chapter.startTime <= time)
     .at(-1);
+  if (oldActiveChapterStartTime != activeChapter.value.startTime) {
+    document
+      .querySelector(".player .controls li.active")
+      .scrollIntoView({ block: "nearest", behavior: "smooth" });
+  }
 };
 </script>
 
