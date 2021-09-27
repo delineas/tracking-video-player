@@ -4,19 +4,23 @@
       <div id="player-video" class="video__embed"></div>
     </div>
     <div class="controls">
-      <ul class="controls__list">
+      <ol class="controls__list">
         <li
           v-for="chapter in chapters"
           :key="chapter"
           @click="setVideoToChapter($event, chapter)"
+          class="chapter"
           :class="{
-            active: activeChapter.title == chapter.title,
-            featured: chapter.featured,
+            'chapter--active': activeChapter.title == chapter.title,
+            'chapter--featured': chapter.featured,
           }"
         >
-          {{ chapter.title }} <span v-if="chapter.starred">✴️</span>
+          <span class="chapter__timestamp">{{
+            new Date(chapter.startTime * 1000).toISOString().substr(11, 8)
+          }}</span>
+          {{ chapter.title }}<span class="chapter__badge" v-if="chapter.starred">✴️</span>
         </li>
-      </ul>
+      </ol>
     </div>
   </div>
 </template>
@@ -130,7 +134,11 @@ const setVideoToChapter = (event, chapter) => {
           break;
       }
     });
-  //event.target.scrollIntoView({ block: "center", behavior: "smooth" }); 
+  setTimeout(() => {
+    document
+      .querySelector(".player .controls li.chapter--active")
+      .scrollIntoView(true);
+  }, 200);
 };
 
 const setPlayerProgressCurrentTime = (percent = 0) => {
@@ -147,9 +155,11 @@ const setActiveChapterFromProgress = (time) => {
     .filter((chapter) => chapter.startTime <= time)
     .at(-1);
   if (oldActiveChapterStartTime != activeChapter.value.startTime) {
-    document
-      .querySelector(".player .controls li.active")
-      .scrollIntoView({ block: "nearest", behavior: "smooth" });
+    setTimeout(() => {
+      document
+        .querySelector(".player .controls li.chapter--active")
+        .scrollIntoView(true);
+    }, 200);
   }
 };
 </script>
@@ -188,11 +198,29 @@ const setActiveChapterFromProgress = (time) => {
   cursor: pointer;
 }
 
-.controls__list li.active {
+.chapter {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+}
+.chapter.chapter--active {
   background-color: darkslateblue;
   color: antiquewhite;
 }
-.controls__list li.featured {
+.chapter.chapter--featured {
   font-weight: bold;
+}
+.chapter__timestamp {
+  background: brown;
+  color: white;
+  font-size: 0.9em;
+  border-radius: 10px;
+  padding: 2px 5px;
+  font-weight: normal;
+  font-family: monospace;
+  margin-right: 8px;
+}
+.chapter__badge {
+  margin-left: 8px;
 }
 </style>
