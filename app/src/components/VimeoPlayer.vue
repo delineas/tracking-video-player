@@ -8,7 +8,7 @@
     <div class="controls">
       <div class="controls_buttons">
         <button @click="toggleControls">
-          <span v-if="areControlsVisible">cerrar</span><span v-else>abrir</span>
+          <span v-if="areControlsVisible"><ColumnsH /></span><span v-else><ColumnsV /></span>
         </button>
       </div>
       <ol class="controls__list">
@@ -39,6 +39,8 @@ import postPlayerProgress from "../utils/progress";
 import { ref } from "@vue/reactivity";
 import { onMounted, onUnmounted } from "@vue/runtime-core";
 import Player from "@vimeo/player";
+import ColumnsH from "../icons/ColumnsH.vue";
+import ColumnsV from "../icons/ColumnsV.vue";
 
 const props = defineProps({
   videoId: {
@@ -184,6 +186,7 @@ const setActiveChapterFromProgress = (time) => {
 .video {
   width: 65%;
   margin-right: 1em;
+  transition: all 0.5s 0s ease;
 }
 
 .video--full-width {
