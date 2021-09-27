@@ -1,7 +1,9 @@
 <template>
   <div class="player">
     <div class="video">
-      <div id="player-video" class="video__embed"></div>
+      <div class="video__container">
+        <div id="player-video" class="video__container__iframe"></div>
+      </div>
     </div>
     <div class="controls">
       <ol class="controls__list">
@@ -18,7 +20,8 @@
           <span class="chapter__timestamp">{{
             new Date(chapter.startTime * 1000).toISOString().substr(11, 8)
           }}</span>
-          {{ chapter.title }}<span class="chapter__badge" v-if="chapter.starred">✴️</span>
+          {{ chapter.title
+          }}<span class="chapter__badge" v-if="chapter.starred">✴️</span>
         </li>
       </ol>
     </div>
@@ -78,7 +81,7 @@ onMounted(() => {
 
   player = new Player("player-video", {
     id: props.videoId,
-    width: "800",
+    width: "640",
   });
 
   player.on("timeupdate", function (event) {
@@ -173,6 +176,25 @@ const setActiveChapterFromProgress = (time) => {
   padding: 20px;
 }
 
+.video {
+  width: 65%;
+  margin-right: 1em;
+}
+
+.video__container {
+  position: relative;
+  padding-bottom: 56.25%;
+  overflow: hidden;
+}
+
+.video__container__iframe iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
 .controls {
   flex: 1;
   overflow-y: hidden;
@@ -213,12 +235,12 @@ const setActiveChapterFromProgress = (time) => {
 .chapter__timestamp {
   background: brown;
   color: white;
-  font-size: 0.9em;
+  font-size: 0.8em;
   border-radius: 10px;
   padding: 2px 5px;
   font-weight: normal;
-  font-family: monospace;
-  margin-right: 8px;
+  font-family: sans-serif;
+  margin-right: 6px;
 }
 .chapter__badge {
   margin-left: 8px;
