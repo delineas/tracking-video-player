@@ -1,11 +1,16 @@
 <template>
-  <div class="player">
-    <div class="video">
+  <div class="player" :class="{ 'player--column': !areControlsVisible }">
+    <div class="video" :class="{ 'video--full-width': !areControlsVisible }">
       <div class="video__container">
         <div id="player-video" class="video__container__iframe"></div>
       </div>
     </div>
     <div class="controls">
+      <div class="controls_buttons">
+        <button @click="toggleControls">
+          <span v-if="areControlsVisible">cerrar</span><span v-else>abrir</span>
+        </button>
+      </div>
       <ol class="controls__list">
         <li
           v-for="chapter in chapters"
@@ -58,6 +63,7 @@ const activeChapter = ref(props.chapters[0]);
 
 let player;
 let postPlayerInterval;
+const areControlsVisible = ref(true);
 const localStorageKey = `video-player-progress-${props.userId}-${props.videoId}`;
 const localStorageKeyLastUpdate = `video-player-last-update-${props.userId}-${props.videoId}`;
 
@@ -122,6 +128,10 @@ onMounted(() => {
 
 onUnmounted(() => clearInterval(postPlayerInterval));
 
+const toggleControls = () => {
+  areControlsVisible.value = !areControlsVisible.value;
+};
+
 const setVideoToChapter = (event, chapter) => {
   activeChapter.value = chapter;
   player
@@ -140,7 +150,7 @@ const setVideoToChapter = (event, chapter) => {
   setTimeout(() => {
     document
       .querySelector(".player .controls li.chapter--active")
-      .scrollIntoView(true);
+      .scrollIntoView({ block: "nearest", behavior: "smooth" });
   }, 200);
 };
 
@@ -153,17 +163,9 @@ const setPlayerProgressCurrentTime = (percent = 0) => {
 };
 
 const setActiveChapterFromProgress = (time) => {
-  const oldActiveChapterStartTime = activeChapter.value.startTime;
   activeChapter.value = props.chapters
     .filter((chapter) => chapter.startTime <= time)
     .at(-1);
-  if (oldActiveChapterStartTime != activeChapter.value.startTime) {
-    setTimeout(() => {
-      document
-        .querySelector(".player .controls li.chapter--active")
-        .scrollIntoView(true);
-    }, 200);
-  }
 };
 </script>
 
@@ -175,10 +177,17 @@ const setActiveChapterFromProgress = (time) => {
   width: 100%;
   padding: 20px;
 }
+.player--column {
+  flex-direction: column;
+}
 
 .video {
   width: 65%;
   margin-right: 1em;
+}
+
+.video--full-width {
+  width: 100%;
 }
 
 .video__container {
