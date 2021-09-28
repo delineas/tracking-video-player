@@ -100,7 +100,7 @@ onMounted(() => {
     };
     localStorage.setItem(localStorageKey, JSON.stringify(playerProgress));
 
-    setActiveChapterFromProgress(event.seconds);
+    setActiveChapterFromProgress(event.seconds)(false);
   });
 
   const playerStorage = localStorage.getItem(localStorageKey);
@@ -159,7 +159,7 @@ const setVideoToChapter = (event, chapter) => {
 const setPlayerProgressCurrentTime = (percent = 0) => {
   player.getDuration().then((duration) => {
     player.setCurrentTime(percent * duration);
-    setActiveChapterFromProgress(percent * duration);
+    setActiveChapterFromProgress(percent * duration)(true);
     player.play();
   });
 };
@@ -168,6 +168,15 @@ const setActiveChapterFromProgress = (time) => {
   activeChapter.value = props.chapters
     .filter((chapter) => chapter.startTime <= time)
     .at(-1);
+  return (arg) => {
+    if (arg) {
+      setTimeout(() => {
+        document
+          .querySelector(".player .controls li.chapter--active")
+          .scrollIntoView({ block: "nearest", behavior: "smooth" });
+      }, 200);
+    }
+  };
 };
 </script>
 
