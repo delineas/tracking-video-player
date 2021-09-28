@@ -5,30 +5,38 @@
         <div id="player-video" class="video__container__iframe"></div>
       </div>
     </div>
-    <div class="controls">
-      <div class="controls_buttons">
-        <button @click="toggleControls">
-          <span v-if="areControlsVisible"><ColumnsH /></span><span v-else><ColumnsV /></span>
-        </button>
+    <div
+      class="controls"
+      :class="{ 'controls--full-width': !areControlsVisible }"
+    >
+      <div class="controls__wrapper">
+        <div class="controls__container">
+          <div class="controls__buttons">
+            <button @click="toggleControls">
+              <span v-if="areControlsVisible"><ColumnsH /></span
+              ><span v-else><ColumnsV /></span>
+            </button>
+          </div>
+          <ol class="controls__chapters">
+            <li
+              v-for="chapter in chapters"
+              :key="chapter"
+              @click="setVideoToChapter($event, chapter)"
+              class="chapter"
+              :class="{
+                'chapter--active': activeChapter.title == chapter.title,
+                'chapter--featured': chapter.featured,
+              }"
+            >
+              <span class="chapter__timestamp">{{
+                new Date(chapter.startTime * 1000).toISOString().substr(11, 8)
+              }}</span>
+              {{ chapter.title
+              }}<span class="chapter__badge" v-if="chapter.starred">✴️</span>
+            </li>
+          </ol>
+        </div>
       </div>
-      <ol class="controls__list">
-        <li
-          v-for="chapter in chapters"
-          :key="chapter"
-          @click="setVideoToChapter($event, chapter)"
-          class="chapter"
-          :class="{
-            'chapter--active': activeChapter.title == chapter.title,
-            'chapter--featured': chapter.featured,
-          }"
-        >
-          <span class="chapter__timestamp">{{
-            new Date(chapter.startTime * 1000).toISOString().substr(11, 8)
-          }}</span>
-          {{ chapter.title
-          }}<span class="chapter__badge" v-if="chapter.starred">✴️</span>
-        </li>
-      </ol>
     </div>
   </div>
 </template>
@@ -181,11 +189,14 @@ const setActiveChapterFromProgress = (time) => {
 </script>
 
 <style>
+body {
+  margin: 0;
+}
+
 .player {
   display: flex;
   flex-direction: row;
   background-color: navy;
-  width: 100%;
   padding: 20px;
 }
 .player--column {
@@ -217,23 +228,45 @@ const setActiveChapterFromProgress = (time) => {
 }
 
 .controls {
-  flex: 1;
-  overflow-y: hidden;
-  height: 450px;
-  background-color: antiquewhite;
-  color: darkslateblue;
+  width: 35%;
   border-radius: 0.5em;
 }
 
-.controls__list {
+.controls--full-width {
+  width: 100%;
+  margin-top: 8px;
+}
+.controls--full-width .controls__wrapper {
+  position: inherit;
+  height: auto;
+}
+.controls--full-width .controls__container {
+  position: inherit;
+  width: auto;
+}
+
+.controls__wrapper {
+  position: relative;
+  height: 100%;
+  overflow-y: auto;
+}
+
+.controls__container {
+  position: absolute;
+  width: 100%;
+  overflow: hidden;
+  background-color: antiquewhite;
+  color: darkslateblue;
+}
+
+.controls__chapters {
   overflow-y: scroll;
   height: 100%;
   list-style: none;
   padding: 0;
   margin: 0;
 }
-
-.controls__list li {
+.controls__chapters li {
   display: block;
   padding: 10px;
   margin: 0;
