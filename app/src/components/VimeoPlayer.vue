@@ -157,11 +157,6 @@ const setVideoToChapter = (event, chapter) => {
           break;
       }
     });
-  setTimeout(() => {
-    document
-      .querySelector(".player .controls li.chapter--active")
-      .scrollIntoView({ block: "nearest", behavior: "smooth" });
-  }, 200);
 };
 
 const setPlayerProgressCurrentTime = (percent = 0) => {
