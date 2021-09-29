@@ -168,15 +168,16 @@ const setPlayerProgressCurrentTime = (percent = 0) => {
 };
 
 const setActiveChapterFromProgress = (time) => {
-  activeChapter.value = props.chapters
-    .filter((chapter) => chapter.startTime <= time)
-    .at(-1);
+  const prevChapters = props.chapters.filter(
+    (chapter) => chapter.startTime <= time
+  );
+  activeChapter.value = prevChapters[prevChapters.length - 1];
   return (arg) => {
     if (arg) {
       setTimeout(() => {
         document
           .querySelector(".player .controls li.chapter--active")
-          .scrollIntoView({ block: "nearest", behavior: "smooth" });
+          .scrollIntoView(true);
       }, 200);
     }
   };
