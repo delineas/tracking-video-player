@@ -1,19 +1,19 @@
 <template>
-  <div class="player" :class="{ 'player--column': !areControlsVisible }">
-    <div class="video" :class="{ 'video--full-width': !areControlsVisible }">
+  <div class="player" :class="{ 'player--column': !areControlsInRow }">
+    <div class="video" :class="{ 'video--full-width': !areControlsInRow }">
       <div class="video__container">
         <div id="player-video" class="video__container__iframe"></div>
       </div>
     </div>
     <div
       class="controls"
-      :class="{ 'controls--full-width': !areControlsVisible }"
+      :class="{ 'controls--full-width': !areControlsInRow }"
     >
       <div class="controls__wrapper">
         <div class="controls__container">
           <div class="controls__buttons">
             <button @click="toggleControls">
-              <span v-if="areControlsVisible"><ColumnsH /></span
+              <span v-if="areControlsInRow"><ColumnsH /></span
               ><span v-else><ColumnsV /></span>
             </button>
           </div>
@@ -21,7 +21,7 @@
             <li
               v-for="chapter in chapters"
               :key="chapter"
-              @click="setVideoToChapter($event, chapter)"
+              @click="setVideoToChapter(chapter)"
               class="chapter"
               :class="{
                 'chapter--active': activeChapter.title == chapter.title,
@@ -32,7 +32,9 @@
                 new Date(chapter.startTime * 1000).toISOString().substr(11, 8)
               }}</span>
               {{ chapter.title
-              }}<span class="chapter__badge" v-if="chapter.starred">✴️</span>
+              }}<span class="chapter__badge" v-if="chapter.starred">✴️</span><span class="chapter__link"
+                ><a :href="`#${generateAnchorId(chapter.title)}`"><ShareIcon/></a></span
+              >
             </li>
           </ol>
         </div>
@@ -49,6 +51,7 @@ import { onMounted, onUnmounted } from "@vue/runtime-core";
 import Player from "@vimeo/player";
 import ColumnsH from "../icons/ColumnsH.vue";
 import ColumnsV from "../icons/ColumnsV.vue";
+import ShareIcon from "../icons/ShareIcon.vue";
 
 const props = defineProps({
   videoId: {
@@ -73,9 +76,22 @@ const activeChapter = ref(props.chapters[0]);
 
 let player;
 let postPlayerInterval;
-const areControlsVisible = ref(true);
+const areControlsInRow = ref(true);
 const localStorageKey = `video-player-progress-${props.userId}-${props.videoId}`;
 const localStorageKeyLastUpdate = `video-player-last-update-${props.userId}-${props.videoId}`;
+const hasHash = window.location.hash.length > 0;
+
+// onCreated
+if (hasHash) {
+  setTimeout(function () {
+    window.scrollTo(0, 0);
+  }, 500);
+}
+
+if(window.screen.width < 768) {
+  areControlsInRow.value = false;
+}
+
 
 onMounted(() => {
   postPlayerInterval = setInterval(
@@ -107,7 +123,6 @@ onMounted(() => {
       percent: event.percent,
     };
     localStorage.setItem(localStorageKey, JSON.stringify(playerProgress));
-
     setActiveChapterFromProgress(event.seconds)(false);
   });
 
@@ -136,13 +151,29 @@ onMounted(() => {
   }
 });
 
+
+onMounted(() => {
+  if (hasHash) {
+    setActiveChaptersFromHash();
+  }
+});
+
 onUnmounted(() => clearInterval(postPlayerInterval));
 
-const toggleControls = () => {
-  areControlsVisible.value = !areControlsVisible.value;
+const setActiveChaptersFromHash = () => {
+  const activeChapterFromHash = props.chapters.find(
+    (chapter) => generateAnchorId(chapter.title) == location.hash.substr(1)
+  );
+  if (activeChapterFromHash) {
+    setVideoToChapter(activeChapterFromHash);
+  }
 };
 
-const setVideoToChapter = (event, chapter) => {
+const toggleControls = () => {
+  areControlsInRow.value = !areControlsInRow.value;
+};
+
+const setVideoToChapter = (chapter) => {
   activeChapter.value = chapter;
   player
     .setCurrentTime(chapter.startTime)
@@ -182,13 +213,19 @@ const setActiveChapterFromProgress = (time) => {
     }
   };
 };
+
+const generateAnchorId = (text) =>
+  text
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/([aeio])\u0301|(u)[\u0301\u0308]/gi, "$1$2")
+    .normalize()
+    .replace(/ñ/gi, "n")
+    .replace(/[`~!@#$%^&*()_|+\-=?;:'",.<>\{\}\[\]\\\/]/gi, "")
+    .replace(/ +/g, "-");
 </script>
 
-<style>
-body {
-  margin: 0;
-}
-
+<style scoped>
 .player {
   display: flex;
   flex-direction: row;
@@ -291,6 +328,17 @@ body {
   font-weight: normal;
   font-family: sans-serif;
   margin-right: 6px;
+}
+
+.chapter:hover .chapter__link {
+  display: inline;
+}
+.chapter__link {
+  display: none;
+  padding: 0 0 0 15px;
+}
+.chapter__link a {
+  text-decoration: none;
 }
 .chapter__badge {
   margin-left: 8px;
