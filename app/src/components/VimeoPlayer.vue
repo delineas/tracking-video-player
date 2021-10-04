@@ -94,7 +94,7 @@ if (hasHash) {
   }, 500);
 }
 
-if (window.screen.width < 768) {
+if (window.innerWidth < 768) {
   areControlsInRow.value = false;
 }
 
@@ -167,6 +167,7 @@ const setActiveChaptersFromHash = () => {
   );
   if (activeChapterFromHash) {
     setVideoToChapter(activeChapterFromHash);
+    scrollChaptersToActive();
   }
 };
 
@@ -206,13 +207,17 @@ const setActiveChapterFromProgress = (time) => {
   activeChapter.value = prevChapters[prevChapters.length - 1];
   return (arg) => {
     if (arg) {
-      setTimeout(() => {
-        document
-          .querySelector(".player .controls li.chapter--active")
-          .scrollIntoView(true);
-      }, 200);
+      scrollChaptersToActive()
     }
   };
+};
+
+const scrollChaptersToActive = () => {
+  setTimeout(() => {
+    document
+      .querySelector(".player .controls li.chapter--active")
+      .scrollIntoView(true);
+  }, 200);
 };
 
 const generateAnchorId = (text) =>
@@ -230,7 +235,7 @@ const generateAnchorId = (text) =>
 .player {
   display: flex;
   flex-direction: row;
-  background-color: navy;
+  background-color: #4f0000;
   padding: 20px;
 }
 .player--column {
