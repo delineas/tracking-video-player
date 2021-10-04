@@ -94,7 +94,7 @@ if (hasHash) {
   }, 500);
 }
 
-if (window.innerWidth < 768) {
+if (window.innerWidth < 1024) {
   areControlsInRow.value = false;
 }
 
