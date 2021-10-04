@@ -9,14 +9,14 @@
       class="controls"
       :class="{ 'controls--full-width': !areControlsInRow }"
     >
+      <div class="controls__buttons">
+        <button @click="toggleControls">
+          <span v-if="areControlsInRow"><ColumnsH /></span
+          ><span v-else><ColumnsV /></span>
+        </button>
+      </div>
       <div class="controls__wrapper">
         <div class="controls__container">
-          <div class="controls__buttons">
-            <button @click="toggleControls">
-              <span v-if="areControlsInRow"><ColumnsH /></span
-              ><span v-else><ColumnsV /></span>
-            </button>
-          </div>
           <ol class="controls__chapters">
             <li
               v-for="chapter in chapters"
@@ -32,9 +32,11 @@
                 new Date(chapter.startTime * 1000).toISOString().substr(11, 8)
               }}</span>
               {{ chapter.title
-              }}<span class="chapter__badge" v-if="chapter.starred">✴️</span><span class="chapter__link"
-                ><a :href="`#${generateAnchorId(chapter.title)}`"><ShareIcon/></a></span
-              >
+              }}<span class="chapter__badge" v-if="chapter.starred">✴️</span
+              ><span class="chapter__link"
+                ><a :href="`#${generateAnchorId(chapter.title)}`"
+                  ><ShareIcon /></a
+              ></span>
             </li>
           </ol>
         </div>
@@ -80,18 +82,21 @@ const areControlsInRow = ref(true);
 const localStorageKey = `video-player-progress-${props.userId}-${props.videoId}`;
 const localStorageKeyLastUpdate = `video-player-last-update-${props.userId}-${props.videoId}`;
 const hasHash = window.location.hash.length > 0;
+const progressNull = {
+  percent: 0,
+};
 
 // onCreated
 if (hasHash) {
+  localStorage.setItem(localStorageKey, JSON.stringify(progressNull));
   setTimeout(function () {
     window.scrollTo(0, 0);
   }, 500);
 }
 
-if(window.screen.width < 768) {
+if (window.screen.width < 768) {
   areControlsInRow.value = false;
 }
-
 
 onMounted(() => {
   postPlayerInterval = setInterval(
@@ -104,12 +109,7 @@ onMounted(() => {
   );
 
   // Set initial progress update on 0
-  localStorage.setItem(
-    localStorageKeyLastUpdate,
-    JSON.stringify({
-      percent: 0,
-    })
-  );
+  localStorage.setItem(localStorageKeyLastUpdate, JSON.stringify(progressNull));
 
   player = new Player("player-video", {
     id: props.videoId,
@@ -151,10 +151,11 @@ onMounted(() => {
   }
 });
 
-
 onMounted(() => {
   if (hasHash) {
-    setActiveChaptersFromHash();
+    setTimeout(() => {
+      setActiveChaptersFromHash();
+    }, 1000);
   }
 });
 
@@ -280,7 +281,7 @@ const generateAnchorId = (text) =>
 
 .controls__wrapper {
   position: relative;
-  height: 100%;
+  height: calc(100% - 33px);
   overflow-y: auto;
 }
 
