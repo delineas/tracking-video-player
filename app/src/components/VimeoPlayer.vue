@@ -34,7 +34,7 @@
               {{ chapter.title
               }}<span class="chapter__badge" v-if="chapter.starred">✴️</span
               ><span class="chapter__link"
-                ><a :href="`#${generateAnchorId(chapter.title)}`"
+                ><a :href="`#${generateAnchorId(chapter.startTime)}`"
                   ><ShareIcon /></a
               ></span>
             </li>
@@ -81,7 +81,7 @@ let postPlayerInterval;
 const areControlsInRow = ref(true);
 const localStorageKey = `video-player-progress-${props.userId}-${props.videoId}`;
 const localStorageKeyLastUpdate = `video-player-last-update-${props.userId}-${props.videoId}`;
-const hasHash = window.location.hash.length > 0;
+const hasHash = window.location.hash.length > 0 && window.location.hash.indexOf("#ts") === 0;
 const progressNull = {
   percent: 0,
 };
@@ -163,11 +163,11 @@ onUnmounted(() => clearInterval(postPlayerInterval));
 
 const setActiveChaptersFromHash = () => {
   const activeChapterFromHash = props.chapters.find(
-    (chapter) => generateAnchorId(chapter.title) == location.hash.substr(1)
+    (chapter) => generateAnchorId(chapter.startTime) == location.hash.substr(1)
   );
   if (activeChapterFromHash) {
     setVideoToChapter(activeChapterFromHash);
-    scrollChaptersToActive();
+    scrollChaptersToActive({ block: 'end', behavior: 'smooth' });
   }
 };
 
@@ -212,23 +212,15 @@ const setActiveChapterFromProgress = (time) => {
   };
 };
 
-const scrollChaptersToActive = () => {
+const scrollChaptersToActive = (options = true) => {
   setTimeout(() => {
     document
       .querySelector(".player .controls li.chapter--active")
-      .scrollIntoView(true);
+      .scrollIntoView(options);
   }, 200);
 };
 
-const generateAnchorId = (text) =>
-  text
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/([aeio])\u0301|(u)[\u0301\u0308]/gi, "$1$2")
-    .normalize()
-    .replace(/ñ/gi, "n")
-    .replace(/[`~!@#$%^&*()_|+\-=?;:'",.<>\{\}\[\]\\\/]/gi, "")
-    .replace(/ +/g, "-");
+const generateAnchorId = (text) => `ts${text}`
 </script>
 
 <style>
