@@ -225,7 +225,7 @@ const generateAnchorId = (text) =>
     .replace(/ +/g, "-");
 </script>
 
-<style scoped>
+<style>
 .player {
   display: flex;
   flex-direction: row;
